@@ -6,6 +6,7 @@ import {
   getMyPosts,
   updateMyPost,
   deleteMyPost,
+  fetchPostData,
 } from "../controllers/userPost.controller";
 import { validate } from "../middlewares/joi.middleware";
 import {
@@ -15,11 +16,21 @@ import {
 
 const router = express.Router();
 
-router.use(authenticate, authorize("user"));
+// Apply authenticate to all routes
+router.use(authenticate);
 
-router.post("/", validate(createPostSchema), createPost);
-router.get("/", getMyPosts);
-router.put("/:id", validate(updatePostSchema), updateMyPost);
-router.delete("/:id", deleteMyPost);
+// Routes with "user" only
+router.post("/", authorize("user"), validate(createPostSchema), createPost);
+router.get("/", authorize("user"), getMyPosts);
+router.delete("/:id", authorize("user"), deleteMyPost);
+
+// Route allowing "user" and "admin"
+router.get("/:id", authorize("user", "admin"), fetchPostData);
+router.put(
+  "/:id",
+  authorize("user", "admin"),
+  validate(updatePostSchema),
+  updateMyPost
+);
 
 export default router;

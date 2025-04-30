@@ -12,6 +12,24 @@ export const createPost = async (req: Request, res: Response) => {
   }
 };
 
+export const fetchPostData = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.id;
+
+    const post = await Post.findOne({ _id: postId });
+
+    if (!post) {
+      res.status(404).json({ message: "Post not found" });
+      return;
+    }
+
+    res.json(post);
+  } catch (error) {
+    console.error("Error fetching post:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const getMyPosts = async (req: Request, res: Response) => {
   try {
     const posts = await Post.find({ author: req.user!.id });
@@ -24,11 +42,9 @@ export const getMyPosts = async (req: Request, res: Response) => {
 
 export const updateMyPost = async (req: Request, res: Response) => {
   try {
-    const post = await Post.findOneAndUpdate(
-      { _id: req.params.id, author: req.user!.id },
-      req.body,
-      { new: true }
-    );
+    const post = await Post.findOneAndUpdate({ _id: req.params.id }, req.body, {
+      new: true,
+    });
 
     if (!post) {
       res.status(404).json({ message: "Post not found" });
